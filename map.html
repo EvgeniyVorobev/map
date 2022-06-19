@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCwPrFHf7ocdSNu2XRorp-pKq15iHD8vzk"></script>
+<style>
+    #map {
+        height: 300px;
+        border: 1px solid #000;
+    }
+</style>
+
+<div id="map"></div>
+
+
+<script>
+    jQuery(function($){
+        initialize();
+        var latlng, map, marker,
+            div = $('<div>');
+
+        const geocoder = new google.maps.Geocoder();
+        const infowindow = new google.maps.InfoWindow();
+
+        function initialize(){
+            latlng = new google.maps.LatLng(0.0000, 0.0000);
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: latlng,
+                zoom: 2,
+                mapTypeControl:false,
+                streetViewControl:false,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+            google.maps.event.addListener(map, 'click', function(event) {
+                placeMarker(event.latLng);
+            });
+        }
+
+        function placeMarker(location) {
+            if (marker) {
+                marker.setPosition(location);
+            } else {
+                marker = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    title: 'Set lat/lon values for this property',
+                    draggable: true
+                });
+                google.maps.event.addListener(marker, 'dragend', function (a) {
+                    div.html(a.latLng.lat().toFixed(4) + ', ' + a.latLng.lng().toFixed(4)).clone().appendTo('body');
+                    infoWindow(a.latLng);
+                });
+            }
+            div.html(location.lat().toFixed(4) + ', ' + location.lng().toFixed(4)).clone().appendTo('body');
+            infoWindow(location);
+        }
+
+        function infoWindow(a){
+            var latlng ={
+                lat: a.lat(),
+                lng: a.lng()
+            };
+            var latlngTxt = 'Cordinates: ' + 'lat: ' + latlng.lat + ' lng: ' + latlng.lng + '<br>';
+
+            geocoder
+                .geocode({ location: latlng })
+                .then((response) => {
+                    if (response.results[0]) {
+                        let adress = response.results[0].formatted_address;
+                        infowindow.setContent(latlngTxt + response.results[0].formatted_address);
+                        infowindow.open(map, marker);
+                    } else {
+                        window.alert('Geocode was not successful for the following reason: ' + status);
+                    }
+                });
+        }
+    });
+</script>
+</body>
+</html>
